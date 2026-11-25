@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Associação de Formas 3D — Fase 3</title>
+  <script>
+    (function () {
+      try {
+        const savedTheme = localStorage.getItem('formas3d-theme');
+        if (savedTheme === 'dark' || savedTheme === 'light') {
+          document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .combo-card-box {
+      background:
+        radial-gradient(circle at 50% 25%, var(--stage-glow), transparent 68%),
+        var(--stage);
+      border: 3px solid var(--edge);
+      border-radius: 22px;
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .combo-formula {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .combo-part-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--panel);
+      border: 2.5px solid var(--edge);
+      border-bottom-width: 4px;
+      border-radius: 16px;
+      padding: 8px 14px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .combo-part-chip svg {
+      width: 28px;
+      height: 28px;
+      flex: none;
+    }
+
+    .combo-plus {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: var(--muted);
+    }
+
+    .combo-mini-stage {
+      width: 100%;
+      height: 175px;
+      border-radius: 16px;
+      background: var(--panel);
+      border: 2px solid var(--edge);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .combo-mini-stage canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    .link-banner {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 14px;
+      background: var(--info-bg);
+      color: var(--info-ink);
+      border: 1.5px solid var(--edge);
+      font-weight: 800;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .objects-3d-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (max-width: 520px) {
+      .objects-3d-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .object-3d-card {
+      background: var(--stage);
+      color: var(--ink);
+      border: 2.5px solid var(--edge);
+      border-bottom-width: 5px;
+      border-radius: 18px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 0.14s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.98rem;
+    }
+
+    .object-3d-card:hover:not(:disabled) {
+      transform: translateY(-2px);
+      border-color: var(--sel-edge);
+    }
+
+    .object-3d-card.selected {
+      background: var(--sel-bg);
+      border-color: var(--sel-edge);
+      box-shadow: 0 0 0 3px var(--sel-glow);
+    }
+
+    .object-3d-card.correct {
+      background: var(--ok-bg);
+      color: var(--ok-ink);
+      border-color: var(--ok-ink);
+    }
+
+    .object-3d-card.wrong {
+      background: var(--bad-bg);
+      color: var(--bad-ink);
+      border-color: var(--bad-ink);
+    }
+
+    .mini-3d-box {
+      width: 100%;
+      height: 118px;
+      border-radius: 13px;
+      background: var(--panel);
+      border: 2px solid var(--edge);
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .mini-3d-box canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+
+    .final-hero-banner {
+      background:
+        radial-gradient(circle at 50% 15%, var(--stage-glow), transparent 72%),
+        var(--stage);
+      border: 2.5px solid var(--edge);
+      border-radius: 22px;
+      padding: 20px 18px;
+      max-width: 780px;
+      margin: 0 auto 22px;
+    }
+
+    .rank-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--sel-bg);
+      color: var(--ink);
+      border: 2px solid var(--primary-edge);
+      border-radius: 999px;
+      padding: 5px 14px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+
+    .phases-showcase {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      max-width: 820px;
+      margin: 0 auto 18px;
+      text-align: left;
+    }
+
+    @media (max-width: 720px) {
+      .phases-showcase {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .phase-result-card {
+      background: var(--stage);
+      border: 2.5px solid var(--edge);
+      border-bottom-width: 6px;
+      border-radius: 20px;
+      padding: 16px;
+      cursor: pointer;
+      transition: transform 0.14s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .phase-result-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--sel-edge);
+    }
+
+    .phase-result-card.active-inspect {
+      border-color: var(--sel-edge);
+      background: var(--sel-bg);
+      box-shadow: 0 0 0 3px var(--sel-glow);
+    }
+
+    .phase-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .phase-tag {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--info-bg);
+      color: var(--info-ink);
+      border: 1.5px solid var(--edge);
+    }
+
+    .phase-stars {
+      font-size: 1.05rem;
+      letter-spacing: 1px;
+    }
+
+    .phase-result-card h3 {
+      margin: 2px 0 0;
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+    }
+
+    .phase-score-line {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
+
+    .phase-bar-track {
+      width: 100%;
+      height: 11px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 2px solid var(--edge);
+      overflow: hidden;
+    }
+
+    .phase-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #2FCB8B 0%, #3AA0FF 65%, #9B6BFF 100%);
+      transition: width 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .phase-detail-box {
+      max-width: 820px;
+      margin: 0 auto 24px;
+      background: var(--info-bg);
+      color: var(--info-ink);
+      border: 2px solid var(--edge);
+      border-radius: 18px;
+      padding: 14px 18px;
+      font-weight: 800;
+      font-size: 0.96rem;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="confetti-layer" aria-hidden="true"></div>
+
+  <main class="app">
+    <header class="top">
+      <div class="brand">
+        <div class="brand-badge" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <circle cx="22" cy="32" r="11" fill="#3AA0FF" stroke="#1B2559" stroke-width="3.5"/>
+            <polygon points="36,20 56,32 36,44" fill="#FFB020" stroke="#1B2559" stroke-width="3.5" stroke-linejoin="round"/>
+            <line x1="22" y1="32" x2="36" y2="32" stroke="#1B2559" stroke-width="3" stroke-dasharray="3 3"/>
+          </svg>
+        </div>
+        <div>
+          <span class="eyebrow">FASE 3 • ASSOCIAÇÃO 3D</span>
+          <h1>Associação de Formas 3D</h1>
+          <p>Veja a combinação de formas e associe ao objeto 3D correto ao lado!</p>
+        </div>
+      </div>
+
+      <div class="score">
+        <ul class="dots" id="round-dots" aria-label="Progresso das rodadas"></ul>
+        <div class="pill streak-pill" id="streak-pill" title="Acertos seguidos">🔥 0</div>
+        <div class="pill" id="score-pill">Acertos: 0 / 6</div>
+        <button type="button" class="btn-icon" id="sound-toggle" aria-label="Ativar ou desativar som" title="Som ligado">🔊</button>
+        <button type="button" class="btn-icon" id="theme-toggle" aria-label="Alternar tema claro ou escuro" title="Alternar tema">🌓</button>
+      </div>
+    </header>
+
+    <section class="game-grid" id="game-screen" aria-label="Área da Fase 3">
+      <div class="card stage-card">
+        <div class="stage-head">
+          <span class="round-tag" id="round-tag">Desafio 1 de 6</span>
+          <button type="button" class="btn-soft" id="hint-btn">💡 Dica</button>
+        </div>
+
+        <div class="combo-card-box">
+          <div class="combo-formula" id="combo-formula"></div>
+          <div class="combo-mini-stage" id="combo-preview" aria-label="Prévia 3D das formas combinadas"></div>
+        </div>
+
+        <div class="link-banner" id="link-banner">
+          <span id="link-status">🔗 Escolha o objeto 3D ao lado que usa essas formas</span>
+        </div>
+
+        <div class="hint-box" id="hint-box" hidden></div>
+
+        <div class="object-caption">
+          <div class="object-name" id="combo-title">Carregando...</div>
+          <div class="object-clue" id="combo-desc">Observe as formas e veja qual montagem 3D faz sentido.</div>
+        </div>
+      </div>
+
+      <div class="card choices-card">
+        <div class="choices-title">Qual objeto 3D corresponde a essa combinação?</div>
+        <p class="panel-sub">Clique no objeto 3D certo — se errar, você fica aqui até acertar.</p>
+
+        <div class="objects-3d-grid" id="objects-grid" role="group" aria-label="Objetos 3D para associar"></div>
+
+        <div class="feedback-box" id="feedback-box" hidden aria-live="polite"></div>
+
+        <div class="footer-actions">
+          <button type="button" class="btn-primary" id="next-btn" hidden>Próximo desafio →</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card summary-card" id="summary-screen" hidden aria-label="Resumo final das 3 fases">
+      <div class="final-hero-banner">
+        <div class="trophy" id="summary-emoji">🏆</div>
+        <div class="rank-badge" id="rank-badge">⭐ Explorador Geométrico 3D</div>
+        <h2 class="summary-title" id="summary-title">Mandou muito bem!</h2>
+        <p class="summary-sub" id="summary-sub">Você concluiu todas as 3 fases do estúdio de geometria 3D!</p>
+      </div>
+
+      <div class="summary-stats">
+        <div class="stat">
+          <strong id="final-score">0/6</strong>
+          <span>Pontuação da Fase 3</span>
+        </div>
+        <div class="stat">
+          <strong id="final-percent">0%</strong>
+          <span>Aproveitamento geral</span>
+        </div>
+        <div class="stat">
+          <strong id="final-streak">0</strong>
+          <span>Maior sequência (Fase 3)</span>
+        </div>
+      </div>
+
+      <div class="phases-showcase" id="phases-showcase" aria-label="Resultado de cada fase"></div>
+
+      <div class="phase-detail-box" id="phase-detail-box">
+        <span id="phase-detail-text">Clique em qualquer fase acima para ver uma mensagem e dica especial!</span>
+        <button type="button" class="btn-soft" id="celebrate-btn">🎉 Soltar confetes</button>
+      </div>
+
+      <div class="summary-actions">
+        <button type="button" class="btn-secondary" id="restart-btn">🔄 Jogar Fase 3 de novo</button>
+        <a href="index.html" class="btn-primary btn-link">Recomeçar na Fase 1 →</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="script2.js" defer></script>
+</body>
+</html>

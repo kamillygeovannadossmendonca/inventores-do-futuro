@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Montagem com Formas 3D — Fase 2</title>
+  <script>
+    (function () {
+      try {
+        const savedTheme = localStorage.getItem('formas3d-theme');
+        if (savedTheme === 'dark' || savedTheme === 'light') {
+          document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="confetti-layer" aria-hidden="true"></div>
+
+  <main class="app">
+    <header class="top">
+      <div class="brand">
+        <div class="brand-badge" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <circle cx="32" cy="20" r="11" fill="#3AA0FF" stroke="#1B2559" stroke-width="3.5"/>
+            <polygon points="18,34 46,34 42,56 22,56" fill="#FFB020" stroke="#1B2559" stroke-width="3.5" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div>
+          <span class="eyebrow">FASE 2 • COMPOSIÇÃO 3D</span>
+          <h1>Montagem com Formas 3D</h1>
+          <p>Gire o modelo, separe as peças e descubra quais formas 3D formam cada objeto!</p>
+        </div>
+      </div>
+
+      <div class="top-right">
+        <span class="pill" id="level-badge">Fase 1 de 6</span>
+        <ul class="dots" id="progress-dots" aria-label="Progresso das fases"></ul>
+        <span class="pill hint-pill">💡 Dicas: <strong id="hint-count">0</strong></span>
+        <button type="button" class="btn-icon" id="sound-toggle" aria-label="Ativar ou desativar som" title="Som ligado">🔊</button>
+        <button type="button" class="btn-icon" id="theme-toggle" aria-label="Alternar tema claro ou escuro" title="Alternar tema">🌓</button>
+      </div>
+    </header>
+
+    <section class="game-board" id="game-board">
+      <div class="card stage-card">
+        <div class="stage-header">
+          <h2 id="object-title">Carregando...</h2>
+          <div class="stage-controls">
+            <button type="button" class="btn-soft" id="btn-explode">
+              <span>🧩</span>
+              <span id="explode-text">Separar Peças</span>
+            </button>
+            <button type="button" class="btn-soft" id="btn-hint">
+              <span>💡</span>
+              <span>Dica</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="canvas-container" class="canvas-container">
+          <span class="drag-tag">✋ Arraste para girar em 3D</span>
+        </div>
+      </div>
+
+      <div class="card panel-card">
+        <h3>Quais formas geométricas formam este objeto?</h3>
+        <p class="panel-sub">Clique nas formas que compõem o objeto — valida na hora e fica aqui até acertar.</p>
+
+        <div id="shapes-grid" class="shapes-grid"></div>
+
+        <div id="feedback-box" class="feedback-box hidden" role="status" aria-live="polite"></div>
+
+        <div class="actions">
+          <button type="button" class="btn-primary hidden" id="btn-next">Próximo jogo →</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card victory-screen hidden" id="victory-screen">
+      <div class="trophy">🏆</div>
+      <h2>Parabéns! Você concluiu o desafio!</h2>
+      <p id="victory-summary"></p>
+      <div class="victory-actions">
+        <button type="button" class="btn-secondary" id="btn-replay">🔄 Jogar novamente</button>
+        <button type="button" class="btn-primary" id="btn-next-game">Próximo jogo →</button>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="script1.js"></script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caça-Formas 3D — Estúdio Geométrico</title>
+  <script>
+    (function () {
+      try {
+        const savedTheme = localStorage.getItem('formas3d-theme');
+        if (savedTheme === 'dark' || savedTheme === 'light') {
+          document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="confetti-layer" aria-hidden="true"></div>
+
+  <main class="app">
+    <header class="top">
+      <div class="brand">
+        <div class="brand-badge" aria-hidden="true">
+          <svg viewBox="0 0 64 64" fill="none">
+            <polygon points="32,6 56,19 32,32 8,19" fill="#FF8585" stroke="#1B2559" stroke-width="3.5" stroke-linejoin="round"/>
+            <polygon points="8,19 32,32 32,58 8,45" fill="#FF5D5D" stroke="#1B2559" stroke-width="3.5" stroke-linejoin="round"/>
+            <polygon points="56,19 32,32 32,58 56,45" fill="#D93B3B" stroke="#1B2559" stroke-width="3.5" stroke-linejoin="round"/>
+            <circle cx="48" cy="46" r="12" fill="#3AA0FF" stroke="#1B2559" stroke-width="3.5"/>
+            <circle cx="44" cy="42" r="3.5" fill="#BEE1FF"/>
+          </svg>
+        </div>
+        <div>
+          <span class="eyebrow">FASE 1 • RECONHECIMENTO 3D</span>
+          <h1>Caça-Formas 3D</h1>
+          <p>Gire o sólido em 360°, ative o Raio-X e descubra a forma geométrica.</p>
+        </div>
+      </div>
+
+      <div class="score">
+        <ul class="dots" id="round-dots" aria-label="Progresso das rodadas"></ul>
+        <div class="pill streak-pill" id="streak-pill" title="Acertos seguidos">🔥 0</div>
+        <div class="pill" id="score-pill">Acertos: 0 / 10</div>
+        <button type="button" class="btn-icon" id="sound-toggle" aria-label="Ativar ou desativar som" title="Som ligado">🔊</button>
+        <button type="button" class="btn-icon" id="theme-toggle" aria-label="Alternar tema claro ou escuro" title="Alternar tema">🌓</button>
+      </div>
+    </header>
+
+    <section class="game-grid" id="game-screen" aria-label="Área do jogo">
+      <div class="card stage-card">
+        <div class="stage-head">
+          <span class="round-tag" id="round-tag">Rodada 1 de 10</span>
+          <div class="stage-head-actions">
+            <button type="button" class="btn-soft" id="xray-btn" aria-pressed="false" title="Ver estrutura interna e arestas em Raio-X">🔍 Raio-X</button>
+            <button type="button" class="btn-soft" id="hint-btn">💡 Dica</button>
+          </div>
+        </div>
+
+        <div class="stage-viewport" id="stage-viewport" title="Arraste para girar em 3D">
+          <div class="drag-hint">✋ Arraste em 360°</div>
+          <div id="webgl-mount" class="webgl-mount" role="img" aria-label="Modelo 3D interativo do objeto"></div>
+          <div class="xray-overlay" id="xray-overlay" hidden></div>
+        </div>
+
+        <div class="object-caption">
+          <div class="object-name" id="object-name">Carregando...</div>
+          <div class="object-clue" id="object-clue">Observe bem o formato deste objeto do dia a dia.</div>
+          <div class="hint-box" id="hint-box" hidden></div>
+        </div>
+
+        <div class="stage-actions">
+          <button type="button" class="btn-soft" id="spin-btn">🔄 Girar 90°</button>
+          <button type="button" class="btn-soft" id="auto-btn" aria-pressed="false">▶️ Giro contínuo</button>
+          <button type="button" class="btn-soft" id="reset-view-btn" title="Centralizar câmera">🎯 Centralizar</button>
+        </div>
+      </div>
+
+      <div class="card choices-card">
+        <div class="choices-title">Qual sólido geométrico define este objeto?</div>
+        <p class="panel-sub">Clique na forma certa — se errar, você fica aqui até acertar.</p>
+
+        <div class="choices-grid" id="choices-grid" role="group" aria-label="Opções de sólidos geométricos"></div>
+
+        <div class="feedback-box" id="feedback-box" hidden aria-live="polite"></div>
+
+        <div class="footer-actions">
+          <button type="button" class="btn-primary" id="next-btn" hidden>Próxima rodada →</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card summary-card" id="summary-screen" hidden aria-label="Resumo final">
+      <div class="trophy" id="summary-emoji">🏆</div>
+      <h2 class="summary-title" id="summary-title">Mandou muito bem!</h2>
+      <p class="summary-sub" id="summary-sub">Você concluiu a caça às formas geométricas.</p>
+
+      <div class="summary-stats">
+        <div class="stat">
+          <strong id="final-score">0/10</strong>
+          <span>Pontuação</span>
+        </div>
+        <div class="stat">
+          <strong id="final-percent">0%</strong>
+          <span>Aproveitamento</span>
+        </div>
+        <div class="stat">
+          <strong id="final-streak">0</strong>
+          <span>Maior sequência</span>
+        </div>
+      </div>
+
+      <div class="shape-breakdown" id="shape-breakdown"></div>
+
+      <div class="summary-actions">
+        <button type="button" class="btn-secondary" id="restart-btn">🔄 Jogar novamente</button>
+        <a href="fase2.html" class="btn-primary btn-link" id="next-game-link">Próximo jogo →</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="script.js" defer></script>
+</body>
+</html>
